@@ -13,6 +13,21 @@ app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 20
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
 
+
+const validate = (req, res, next) => {
+  try{
+    const d = new Date(req.params.d); 
+    
+    if( isNaN(d) && isNaN(Number(req.params.d)))
+      throw 'Invalid Date';    
+    next();
+  }catch (err) {
+    res.json({
+      error: err
+    });
+  }
+}
+
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
@@ -22,6 +37,34 @@ app.get("/", function (req, res) {
 // your first API endpoint... 
 app.get("/api/hello", function (req, res) {
   res.json({greeting: 'hello API'});
+});
+
+app.get('/api/timestamp/:d', validate, (req, res)=>{
+
+  let date = req.params.d;
+
+  if(isNaN(Number(date))){
+    res.json({
+      unix: +new Date(date),
+      utc: new Date(date).toUTCString()
+    });
+  }else{
+    date =  Number(date);
+    res.json({
+      unix: date,
+      utc: new Date(date).toUTCString()
+    });
+  }
+
+
+});
+
+app.get('/api/timestamp/', (req, res)=>{
+  const currDate = Date.now(); 
+  res.json({
+    unix: currDate,
+    utc: new Date(currDate).toUTCString()
+   });
 });
 
 
